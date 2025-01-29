@@ -1,31 +1,23 @@
-require("dotenv").config();
+const cors = require("cors");
 const express = require("express");
 const axios = require("axios");
 
 const app = express();
-const cors = require("cors");
 const PORT = process.env.PORT || 3000;
 
-// Allow requests from both GoHighLevel and BuzzFX site
-const allowedOrigins = [
-    "https://app.gohighlevel.com",
-    "https://buzzfx.online"
-];
-
+// CORS Setup - Allow GHL & BuzzFX, and Handle Preflight Requests
 const corsOptions = {
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error("Not allowed by CORS"));
-        }
-    },
+    origin: "*",  // TEMP FIX: Allows all origins (to confirm CORS is working)
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: ["Content-Type"],
-    credentials: true
+    credentials: true,
+    optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
+
+// Handle Preflight Requests
+app.options("*", cors(corsOptions));
 
 // Middleware to handle JSON requests
 app.use(express.json());
@@ -36,11 +28,14 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 // Root route for debugging
 app.get("/", (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*"); // Ensures the header is always included
   res.send("🚀 Chatbot backend is running successfully!");
 });
 
 // Chat endpoint for handling user messages
 app.post("/chat", async (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*"); // Ensures header is present
+
   console.log("✅ Received a POST request to /chat");
   console.log("Request Body:", req.body);
 
