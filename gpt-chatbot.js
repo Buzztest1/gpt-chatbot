@@ -1,37 +1,39 @@
 require("dotenv").config();
 const express = require("express");
-const bodyParser = require("body-parser");
 const axios = require("axios");
 
 const app = express();
-const PORT = process.env.PORT || 3000; // Change this line to use Render's PORT
+const PORT = process.env.PORT || 3000;
 
-// Middleware
-app.use(bodyParser.json());
+// Middleware to handle JSON requests
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // OpenAI API Key
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-// Route to Handle Chat Requests
+// Root route for debugging
+app.get("/", (req, res) => {
+  res.send("🚀 Chatbot backend is running successfully!");
+});
+
+// Chat endpoint for handling user messages
 app.post("/chat", async (req, res) => {
+  console.log("✅ Received a POST request to /chat");
+  console.log("Request Body:", req.body);
+
   const userMessage = req.body.message;
 
+  if (!userMessage) {
+    return res.status(400).json({ error: "Message is required" });
+  }
+
   try {
-    // Check for specific keywords to route to different APIs
-    if (userMessage.toLowerCase().includes("book a consultation")) {
-      const bookingLink = await getBookingLink();
-      return res.json({ reply: `You can book a consultation here: ${bookingLink}` });
-    } else if (userMessage.toLowerCase().includes("services")) {
-      const services = await getServices();
-      return res.json({ reply: `Here are our services: ${services}` });
-    } else {
-      // Default: Send message to OpenAI for a response
-      const gptResponse = await getGPTResponse(userMessage);
-      return res.json({ reply: gptResponse });
-    }
+    const gptResponse = await getGPTResponse(userMessage);
+    res.json({ reply: gptResponse });
   } catch (error) {
-    console.error("Error:", error.message);
-    return res.status(500).json({ reply: "Sorry, something went wrong. Please try again." });
+    console.error("❌ Chatbot Error:", error);
+    res.status(500).json({ error: "Something went wrong." });
   }
 });
 
@@ -53,41 +55,12 @@ async function getGPTResponse(message) {
     );
     return response.data.choices[0].message.content;
   } catch (error) {
-    console.error("Error with OpenAI API:", error.message);
+    console.error("❌ Error with OpenAI API:", error.message);
     throw new Error("Failed to get GPT response.");
   }
 }
 
-// Example API Integration: Get Booking Link
-async function getBookingLink() {
-  try {
-    // Replace with actual API call (e.g., Calendly API)
-    const link = "https://calendly.com/your-booking-link";
-    return link;
-  } catch (error) {
-    console.error("Error fetching booking link:", error.message);
-    throw new Error("Failed to fetch booking link.");
-  }
-}
-
-// Example API Integration: Get Services
-async function getServices() {
-  try {
-    // Replace with actual API call or hardcoded data
-    const services = ["Web Design", "SaaS Tools", "Branding Solutions"];
-    return services.join(", ");
-  } catch (error) {
-    console.error("Error fetching services:", error.message);
-    throw new Error("Failed to fetch services.");
-  }
-}
-
-app.get("/", (req, res) => {
-  res.send("Chatbot backend is running!");
-});
-
-
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Chatbot backend running at http://localhost:${PORT}`);
+// Start the server - LISTENS ON ALL INTERFACES
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Chatbot backend running on port ${PORT}`);
 });
