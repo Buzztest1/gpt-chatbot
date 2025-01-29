@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const axios = require("axios");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000; // Change this line to use Render's PORT
 
 // Middleware
 app.use(bodyParser.json());
@@ -81,6 +81,11 @@ async function getServices() {
     throw new Error("Failed to fetch services.");
   }
 }
+
+app.get("/", (req, res) => {
+  res.send("Chatbot backend is running!");
+});
+
 
 // Start Server
 app.listen(PORT, () => {
