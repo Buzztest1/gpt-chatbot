@@ -6,16 +6,26 @@ const app = express();
 const cors = require("cors");
 const PORT = process.env.PORT || 3000;
 
-// Allow requests from GHL
+// Allow requests from both GoHighLevel and BuzzFX site
+const allowedOrigins = [
+    "https://app.gohighlevel.com",
+    "https://buzzfx.online"
+];
+
 const corsOptions = {
-  origin: "https://app.gohighlevel.com",
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-  optionsSuccessStatus: 204
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: ["Content-Type"],
+    credentials: true
 };
 
 app.use(cors(corsOptions));
-
 
 // Middleware to handle JSON requests
 app.use(express.json());
