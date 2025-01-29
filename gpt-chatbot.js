@@ -3,7 +3,19 @@ const express = require("express");
 const axios = require("axios");
 
 const app = express();
+const cors = require("cors");
 const PORT = process.env.PORT || 3000;
+
+// Allow requests from GHL
+const corsOptions = {
+  origin: "https://app.gohighlevel.com",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+
 
 // Middleware to handle JSON requests
 app.use(express.json());
